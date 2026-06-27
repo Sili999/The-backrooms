@@ -45,7 +45,7 @@ func _make_material(color: Color, tex_path: String, uv_scale: float) -> Standard
 	m.roughness = 0.95
 	m.metallic = 0.0
 	if ResourceLoader.exists(tex_path):
-		m.albedo_texture = load(tex_path)
+		m.albedo_texture = load(tex_path) as Texture2D
 		m.uv1_scale = Vector3(uv_scale, uv_scale, uv_scale)
 	return m
 

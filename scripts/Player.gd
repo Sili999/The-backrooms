@@ -31,7 +31,7 @@ func _ready() -> void:
 	if _footsteps:
 		var p := "res://assets/audio/footstep_01.ogg"
 		if ResourceLoader.exists(p):
-			_footsteps.stream = load(p)
+			_footsteps.stream = load(p) as AudioStream
 
 
 func _unhandled_input(event: InputEvent) -> void:

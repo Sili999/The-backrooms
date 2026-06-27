@@ -24,10 +24,10 @@ func _ready() -> void:
 	if _sound:
 		var p := "res://assets/audio/entity_ambient.ogg"
 		if ResourceLoader.exists(p):
-			var stream := load(p)
+			var stream := load(p) as AudioStream
 			_sound.stream = stream
 			if stream is AudioStreamOggVorbis:
-				stream.loop = true
+				(stream as AudioStreamOggVorbis).loop = true
 			_sound.play()
 	_pick_new_wander_dir()
 

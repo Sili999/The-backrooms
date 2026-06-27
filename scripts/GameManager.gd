@@ -14,7 +14,7 @@ var state: int = State.MENU
 var player: CharacterBody3D
 var room_generator: Node3D
 var entity: CharacterBody3D
-var sanity: Node
+var sanity  # untypisiert: hält die per Skript instanziierte Sanity-Komponente
 
 # UI-Referenzen
 var ui_layer: CanvasLayer
@@ -105,18 +105,18 @@ func _build_ambient_audio() -> void:
 	hum_player.bus = "Master"
 	var path := "res://assets/audio/hum_loop.ogg"
 	if ResourceLoader.exists(path):
-		var stream := load(path)
+		var stream := load(path) as AudioStream
 		hum_player.stream = stream
 		# Schleife sicherstellen, falls das Asset es unterstützt:
 		if stream is AudioStreamOggVorbis:
-			stream.loop = true
+			(stream as AudioStreamOggVorbis).loop = true
 	add_child(hum_player)
 
 	# Tod-/Schreck-Stinger (one-shot)
 	stinger_player = AudioStreamPlayer.new()
 	var sp := "res://assets/audio/stinger.ogg"
 	if ResourceLoader.exists(sp):
-		stinger_player.stream = load(sp)
+		stinger_player.stream = load(sp) as AudioStream
 	add_child(stinger_player)
 
 
@@ -341,16 +341,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			_toggle_pause()
 		return
 
-	var confirm := (event is InputEventKey and event.pressed and not event.echo \
-			and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)) \
-			or (event is InputEventMouseButton and event.pressed)
+	var confirm := false
+	if event is InputEventKey:
+		if event.pressed and not event.echo and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
+			confirm = true
+	elif event is InputEventMouseButton:
+		if event.pressed:
+			confirm = true
 
 	if not confirm:
 		return
 
-	if state == State.MENU:
-		start_game()
-	elif state == State.DEAD:
+	if state == State.MENU or state == State.DEAD:
 		start_game()
 
 
