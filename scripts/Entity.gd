@@ -1,9 +1,12 @@
 extends CharacterBody3D
 ## Die Bedrohung von Level 0. Mini-Zustandsautomat:
 ##   WANDER      – zufälliges Umherwandern
-##   INVESTIGATE – auf Lärm reagieren: zur Geräuschquelle gehen und den Umkreis absuchen
-##   CHASE       – Spieler in Sichtweite verfolgen (Kontakt → Game Over)
+##   INVESTIGATE – auf Lärm/letzte Sichtung reagieren: zur Position gehen und absuchen
+##   CHASE       – Spieler verfolgen, SOLANGE er gesehen wird (Kontakt → Game Over)
 ## Kein Kampf möglich — nur Distanz halten, weglaufen, verstecken, LEISE sein.
+##
+## Erkennung ist sichtlinien-basiert (Raycast + Sichtkegel), nicht durch Wände.
+## Verfolgen/Untersuchen nutzt leichtes Whisker-Steering, um Wände zu umgehen.
 
 signal caught_player
 
@@ -17,6 +20,13 @@ enum EState { WANDER, INVESTIGATE, CHASE }
 @export var hearing_radius: float = 22.0      # max. Distanz, in der Lärm die Entität erreicht
 @export var investigate_duration: float = 8.0 # Sekunden Suche, bevor zurück zu WANDER
 
+# Sicht & Verhalten
+@export var fov_degrees: float = 110.0        # Sichtkegel (gesamt)
+@export var close_sense_range: float = 3.0    # Nah-Sinn: spürt/hört Spieler unabhängig von FOV/LoS
+@export var lose_memory: float = 2.5          # Sekunden Verfolgen nach Sichtverlust (Hysterese)
+@export var eye_height: float = 1.6           # Augenhöhe für Sichtlinien-Raycast
+@export var steer_probe: float = 1.8          # Reichweite der Hindernis-Fühler
+
 var player: CharacterBody3D
 var _state: int = EState.WANDER
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
@@ -24,6 +34,8 @@ var _wander_dir: Vector3 = Vector3.FORWARD
 var _wander_timer: float = 0.0
 var _investigate_pos: Vector3 = Vector3.ZERO
 var _investigate_timer: float = 0.0
+var _last_seen_pos: Vector3 = Vector3.ZERO
+var _lose_timer: float = 0.0
 var _sound: AudioStreamPlayer3D
 
 
@@ -82,20 +94,29 @@ func _physics_process(delta: float) -> void:
 	to_player.y = 0.0
 	var dist := to_player.length()
 
-	# --- Zustandsübergänge ---
-	if dist < detection_range:
+	# --- Erkennung (Sichtlinie + Sichtkegel) mit Hysterese ---
+	var seen := _can_see_player()
+	if seen:
 		_state = EState.CHASE
+		_last_seen_pos = player.global_position
+		_lose_timer = lose_memory
 	elif _state == EState.CHASE:
-		# Spieler verloren → letzte Position untersuchen
-		_state = EState.INVESTIGATE
-		_investigate_pos = player.global_position
-		_investigate_timer = investigate_duration
+		# Sicht verloren → kurzes Gedächtnis, dann letzte Position untersuchen
+		_lose_timer -= delta
+		if _lose_timer <= 0.0:
+			_state = EState.INVESTIGATE
+			_investigate_pos = _last_seen_pos
+			_investigate_timer = investigate_duration
 
 	# --- Bewegung nach Zustand ---
 	var horizontal := Vector3.ZERO
 	match _state:
 		EState.CHASE:
-			horizontal = to_player.normalized() * chase_speed
+			# Bei Sicht zum Spieler, sonst zur letzten bekannten Position
+			var target := player.global_position if seen else _last_seen_pos
+			var to_target := target - global_position
+			to_target.y = 0.0
+			horizontal = _steer_toward(to_target.normalized()) * chase_speed
 			if _sound:
 				_sound.unit_size = 6.0
 		EState.INVESTIGATE:
@@ -122,7 +143,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Bei Wandkollision (nicht im Chase) neue Richtung wählen
+	# Bei Wandkollision (nur Wandern) neue Richtung wählen
 	if get_slide_collision_count() > 0 and _state == EState.WANDER:
 		_pick_new_wander_dir()
 
@@ -140,14 +161,68 @@ func _update_investigate(delta: float) -> Vector3:
 	var to_target := _investigate_pos - global_position
 	to_target.y = 0.0
 	if to_target.length() > 2.0:
-		# noch unterwegs zur Geräuschquelle
-		return to_target.normalized() * investigate_speed
+		# noch unterwegs zur Position → Wände umgehen
+		return _steer_toward(to_target.normalized()) * investigate_speed
 	else:
 		# am Ziel angekommen → Umkreis absuchen (gelegentlich Richtung wechseln)
 		_wander_timer -= delta
 		if _wander_timer <= 0.0:
 			_pick_new_wander_dir()
 		return _wander_dir * wander_speed
+
+
+# --- Sichtprüfung -----------------------------------------------------------
+func _can_see_player() -> bool:
+	var to_p := player.global_position - global_position
+	var flat := Vector3(to_p.x, 0.0, to_p.z)
+	var d := flat.length()
+
+	# Nah-Sinn: sehr nah wird der Spieler immer bemerkt (kein lautloses Vorbei)
+	if d <= close_sense_range:
+		return true
+	if d > detection_range:
+		return false
+
+	# Sichtkegel
+	var forward := -global_transform.basis.z
+	forward.y = 0.0
+	if forward.length() < 0.01:
+		return false
+	forward = forward.normalized()
+	if forward.dot(flat.normalized()) < cos(deg_to_rad(fov_degrees * 0.5)):
+		return false
+
+	return _has_line_of_sight()
+
+
+func _has_line_of_sight() -> bool:
+	var space := get_world_3d().direct_space_state
+	if space == null:
+		return true
+	var eye := global_position + Vector3(0, eye_height, 0)
+	var target := player.global_position + Vector3(0, eye_height * 0.9, 0)
+	var q := PhysicsRayQueryParameters3D.create(eye, target, 1, [get_rid()])
+	var hit := space.intersect_ray(q)
+	return hit.is_empty()   # kein Treffer auf Welt-Layer 1 ⇒ freie Sicht
+
+
+# --- Whisker-Steering: Wände umgehen ---------------------------------------
+func _steer_toward(desired: Vector3) -> Vector3:
+	if desired.length() < 0.01:
+		return Vector3.ZERO
+	var space := get_world_3d().direct_space_state
+	if space == null:
+		return desired
+	var origin := global_position + Vector3(0, 0.6, 0)
+	# Wunschrichtung zuerst, dann zunehmend ausweichende Winkel
+	for a in [0.0, 35.0, -35.0, 70.0, -70.0]:
+		var dir := desired.rotated(Vector3.UP, deg_to_rad(a))
+		var to := origin + dir * steer_probe
+		var q := PhysicsRayQueryParameters3D.create(origin, to, 1, [get_rid()])
+		if space.intersect_ray(q).is_empty():
+			return dir
+	# alles blockiert → Wunschrichtung behalten (move_and_slide gleitet an Wand)
+	return desired
 
 
 func _pick_new_wander_dir() -> void:
