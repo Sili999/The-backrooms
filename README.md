@@ -8,9 +8,11 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 
 ## Inhalt
 
+- **➡️ `SETUP.md`** — **einfache Schritt-für-Schritt-Anleitung zum Starten** (hier anfangen!).
+- **`docs/ASSETS.md`** — Asset-Einkaufsliste (Platzhalter ersetzen, mit Links).
 - **`docs/BACKROOMS_GAME_DESIGN.md`** — Wissensdatei: alle Backrooms-Konzepte für Game-Designer.
 - **`docs/REALIZATION_PLAN.md`** — Realisierungsplan: Tech-Stack, Assets, Asset-Selbstanalyse, `.exe`-Weg.
-- **Lauffähiges Godot-4-Gerüst** (`scenes/`, `scripts/`) — Level-0-MVP.
+- **Lauffähiges Godot-4-Gerüst** (`scenes/`, `scripts/`) — Level-0-MVP mit Platzhalter-Assets.
 
 ## Features (MVP)
 

@@ -1,8 +1,11 @@
 # Assets
 
-Das Spiel läuft **auch ohne** Dateien in diesem Ordner — fehlende Assets werden im Code durch
-Platzhalter-Materialien/-Geometrie ersetzt. Lege hier die finalen (CC0-/lizenzfreien) Assets ab,
-um den Look zu vervollständigen. Die Skripte laden sie **defensiv** über exakt diese Pfade.
+In `textures/` und `audio/` liegen bereits **generierte Platzhalter** — das Spiel sieht und
+klingt sofort nach Backrooms. Zum Aufwerten ersetzt du sie durch hochwertige (CC0-)Assets mit
+**gleichem Dateinamen** — kein Code-Eingriff nötig. Fehlt eine Datei, fällt das Spiel auf
+prozedurale Platzhalter im Code zurück.
+
+➡️ **Fertige Einkaufsliste mit Links & Zuordnung: [`../docs/ASSETS.md`](../docs/ASSETS.md)**
 
 ## Erwartete Dateien
 

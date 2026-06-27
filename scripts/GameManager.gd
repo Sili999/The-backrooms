@@ -26,6 +26,7 @@ var stamina_bar: ColorRect
 var sanity_bar: ColorRect
 var vignette: ColorRect
 var hum_player: AudioStreamPlayer
+var stinger_player: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -110,6 +111,13 @@ func _build_ambient_audio() -> void:
 		if stream is AudioStreamOggVorbis:
 			stream.loop = true
 	add_child(hum_player)
+
+	# Tod-/Schreck-Stinger (one-shot)
+	stinger_player = AudioStreamPlayer.new()
+	var sp := "res://assets/audio/stinger.ogg"
+	if ResourceLoader.exists(sp):
+		stinger_player.stream = load(sp)
+	add_child(stinger_player)
 
 
 # ---------------------------------------------------------------------------
@@ -307,6 +315,8 @@ func _game_over() -> void:
 	death_panel.visible = true
 	if hum_player and hum_player.playing:
 		hum_player.stop()
+	if stinger_player and stinger_player.stream:
+		stinger_player.play()
 
 
 func _toggle_pause() -> void:
