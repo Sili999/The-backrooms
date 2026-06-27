@@ -264,6 +264,8 @@ func _show_menu() -> void:
 
 
 func start_game() -> void:
+	# Defensiv: falls über einen Pause-Pfad gestartet wird, Tree wieder laufen lassen
+	get_tree().paused = false
 	# Geräuschpegel zurücksetzen
 	NoiseSystem.reset()
 
@@ -328,6 +330,8 @@ func _game_over() -> void:
 		hum_player.stop()
 	if stinger_player and stinger_player.stream:
 		stinger_player.play()
+	# Definierter Ruhezustand: Geräuschpegel im Tod zurücksetzen
+	NoiseSystem.reset()
 
 
 func _toggle_pause() -> void:
