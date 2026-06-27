@@ -24,8 +24,11 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 - **Geräusch-/Stealth-System**: umstoßbare Physik-Objekte und lautes Rennen erhöhen einen
   Geräuschpegel; übersteigt er die Schwelle, wird die Bedrohung **alarmiert** und durchsucht den
   Umkreis der Geräuschquelle. Schleichen hält dich leise.
-- Eine **wandernde Bedrohung** mit Zuständen *Wandern → Untersuchen → Verfolgen* — Kontakt = Game Over
-- Start-/Pause-/Tod-Menü
+- Eine **wandernde Bedrohung** mit sichtlinien-basierter Erkennung (Sichtkegel + Raycast,
+  sieht nicht durch Wände), Kurzzeitgedächtnis und Wand-Steering; Kontakt = Game Over
+- **Verstecken**: in Spinde steigen (`E`) — darin ist man für die Bedrohung unsichtbar
+- **Ziel & Sieg-Loop**: grün leuchtende **Ausgänge** finden und hindurchgehen → „Entkommen" → neue Räume
+- Start-/Pause-/Tod-/Sieg-Menü
 
 ## Steuerung
 
@@ -35,7 +38,7 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 | Umsehen | Maus |
 | Rennen (laut!) | `Shift` (verbraucht Ausdauer) |
 | Schleichen (leise) | `Strg` oder `C` |
-| Interagieren | `E` |
+| Verstecken (Spind) | `E` (vor einem Spind) |
 | Pause | `Esc` |
 | Starten / Neustart | `Enter` oder Mausklick |
 

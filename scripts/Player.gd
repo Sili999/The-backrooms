@@ -19,6 +19,8 @@ var stamina: float = 100.0
 @export var noise_walk: float = 12.0
 @export var noise_crouch: float = 2.0
 
+@export var interact_range: float = 2.6    # Reichweite für Versteck-Interaktion
+
 const HEAD_HEIGHT_STAND: float = 1.6
 const HEAD_HEIGHT_CROUCH: float = 1.15
 
@@ -30,6 +32,12 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 
 var _bob_time: float = 0.0
 var _step_accum: float = 0.0
 var _crouching: bool = false
+
+# Versteck-Zustand (von GameManager/Entity gelesen)
+var hidden: bool = false
+var can_hide: bool = false
+var _hide_target: Node3D = null
+var _unhide_pos: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -54,6 +62,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# Interaktion (Verstecken) zuerst — auch während des Versteckens nutzbar
+	_update_interaction()
+	if hidden:
+		velocity = Vector3.ZERO
+		return   # eingefroren, lautlos, unsichtbar
+
 	# Schwerkraft
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -88,6 +102,53 @@ func _physics_process(delta: float) -> void:
 	_emit_movement_noise(delta, moving, wants_sprint)
 	_apply_headbob(delta, moving, speed)
 	_handle_footsteps(delta, moving, speed)
+
+
+func _update_interaction() -> void:
+	if hidden:
+		can_hide = false
+		if Input.is_action_just_pressed("interact"):
+			_exit_hiding()
+		return
+
+	_hide_target = _ray_for_hideable()
+	can_hide = _hide_target != null
+	if can_hide and Input.is_action_just_pressed("interact"):
+		_enter_hiding(_hide_target)
+
+
+func _ray_for_hideable() -> Node3D:
+	if not _camera:
+		return null
+	var space := get_world_3d().direct_space_state
+	if space == null:
+		return null
+	var from := _camera.global_position
+	var to := from - _camera.global_transform.basis.z * interact_range
+	var q := PhysicsRayQueryParameters3D.create(from, to, 1, [get_rid()])
+	var hit := space.intersect_ray(q)
+	if hit.is_empty():
+		return null
+	var col = hit.collider
+	if col and col.is_in_group("hideable"):
+		return col
+	return null
+
+
+func _enter_hiding(locker: Node3D) -> void:
+	hidden = true
+	can_hide = false
+	_unhide_pos = global_position
+	# In den Spind „einsteigen" (gleiche Höhe, in den Korpus hinein)
+	global_position = Vector3(locker.global_position.x, _unhide_pos.y, locker.global_position.z)
+	velocity = Vector3.ZERO
+
+
+func _exit_hiding() -> void:
+	hidden = false
+	# Zur (kollisionsfreien) Position vor dem Spind zurücktreten
+	global_position = _unhide_pos
+	velocity = Vector3.ZERO
 
 
 func _push_rigid_props() -> void:

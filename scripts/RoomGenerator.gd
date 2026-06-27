@@ -11,6 +11,8 @@ extends Node3D
 @export var wall_density: float = 0.42  # Anteil Zellen mit Wandsegment
 @export var prop_density: float = 0.07  # Anteil leerer Zellen mit umstoßbarem Prop
 @export var almond_density: float = 0.03 # Anteil leerer Zellen mit Almond Water
+@export var hide_density: float = 0.04   # Anteil leerer Zellen mit Versteck (Spind)
+@export var exit_density: float = 0.016  # Anteil leerer Zellen mit Ausgang
 @export var world_seed: int = 1337
 
 var player: CharacterBody3D
@@ -24,6 +26,8 @@ var _mat_light: StandardMaterial3D
 const FLICKER := preload("res://scripts/FlickerLight.gd")
 const PROP := preload("res://scripts/KnockableProp.gd")
 const ALMOND := preload("res://scripts/AlmondWater.gd")
+const HIDEABLE := preload("res://scripts/Hideable.gd")
+const EXIT := preload("res://scripts/Exit.gd")
 
 
 func _ready() -> void:
@@ -126,6 +130,12 @@ func _generate_chunk(coord: Vector2i) -> Node3D:
 			elif rng.randf() < almond_density:
 				# leere Zelle: selten Almond Water
 				_add_almond_water(chunk, cell_center)
+			elif rng.randf() < hide_density:
+				# leere Zelle: Versteck (Spind)
+				_add_hideable(chunk, cell_center)
+			elif rng.randf() < exit_density:
+				# leere Zelle: selten ein Ausgang (Ziel)
+				_add_exit(chunk, cell_center)
 
 			# Deckenlampe in regelmäßigem Raster
 			var gx := coord.x * chunk_cells + ix
@@ -187,6 +197,18 @@ func _add_almond_water(parent: Node3D, cell_center: Vector3) -> void:
 	var item = ALMOND.new()
 	item.position = cell_center
 	parent.add_child(item)
+
+
+func _add_hideable(parent: Node3D, cell_center: Vector3) -> void:
+	var locker = HIDEABLE.new()
+	locker.position = cell_center
+	parent.add_child(locker)
+
+
+func _add_exit(parent: Node3D, cell_center: Vector3) -> void:
+	var ex = EXIT.new()
+	ex.position = cell_center
+	parent.add_child(ex)
 
 
 func _add_prop(parent: Node3D, cell_center: Vector3, rng: RandomNumberGenerator) -> void:

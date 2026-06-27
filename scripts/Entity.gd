@@ -147,7 +147,7 @@ func _physics_process(delta: float) -> void:
 	if get_slide_collision_count() > 0 and _state == EState.WANDER:
 		_pick_new_wander_dir()
 
-	if dist <= catch_range:
+	if dist <= catch_range and not player.get("hidden"):
 		emit_signal("caught_player")
 
 
@@ -173,6 +173,10 @@ func _update_investigate(delta: float) -> Vector3:
 
 # --- Sichtprüfung -----------------------------------------------------------
 func _can_see_player() -> bool:
+	# Versteckter Spieler ist unsichtbar (auch für den Nah-Sinn)
+	if player.get("hidden"):
+		return false
+
 	var to_p := player.global_position - global_position
 	var flat := Vector3(to_p.x, 0.0, to_p.z)
 	var d := flat.length()

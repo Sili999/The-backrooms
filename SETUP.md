@@ -46,15 +46,17 @@ Geschätzte Zeit: **~10 Minuten**.
 | Umsehen | Maus bewegen |
 | Rennen (laut!) | `Shift` gedrückt halten (verbraucht Ausdauer) |
 | Schleichen (leise) | `Strg` oder `C` |
+| Verstecken (Spind) | `E` (vor einem Spind) |
 | Pause | `Esc` |
 
 > 🔊 **Lärm zieht die Bedrohung an.** Rennen und umgestoßene Objekte erhöhen die orange
 > **GERÄUSCH**-Leiste. Erreicht sie die Schwelle, wird die Gestalt alarmiert und kommt zur
 > Geräuschquelle. Schleiche, um leise zu bleiben.
 
-**Ziel:** Überlebe so lange wie möglich. Halte Abstand zu der dunklen Gestalt,
-die durch die Räume wandert — wenn sie dich erreicht, ist das Spiel vorbei.
-Dein **Verstand** (rote Leiste) sinkt mit der Zeit und je näher die Bedrohung ist.
+**Ziel:** Finde einen grün leuchtenden **AUSGANG** und entkomme aus Level 0. Halte Abstand zu der
+dunklen Gestalt, die durch die Räume wandert — wenn sie dich erreicht, ist das Spiel vorbei.
+Steige in **Spinde** (`E`), um dich unsichtbar zu machen. Dein **Verstand** (rote Leiste) sinkt mit
+der Zeit und je näher die Bedrohung ist — **Almond Water** (verstreut) stellt ihn wieder her.
 
 > 🖱️ Die Maus wird beim Spielen „gefangen". Mit **`Esc`** kommst du wieder heraus (Pause).
 

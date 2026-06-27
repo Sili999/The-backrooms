@@ -4,7 +4,7 @@ extends Node3D
 ## Instanziierung von Spieler, Raum-Generator, Entität und Sanity-System.
 ## Bewusst Code-lastig, damit die .tscn-Dateien schlank und robust bleiben.
 
-enum State { MENU, PLAYING, PAUSED, DEAD }
+enum State { MENU, PLAYING, PAUSED, DEAD, WON }
 
 const PLAYER_SCENE := preload("res://scenes/Player.tscn")
 const ENTITY_SCENE := preload("res://scenes/Entity.tscn")
@@ -22,6 +22,8 @@ var menu_panel: Control
 var hud: Control
 var death_panel: Control
 var pause_panel: Control
+var win_panel: Control
+var prompt_label: Label
 var stamina_bar: ColorRect
 var sanity_bar: ColorRect
 var noise_bar: ColorRect
@@ -184,6 +186,17 @@ func _build_ui() -> void:
 	toast_label.modulate.a = 0.0
 	hud.add_child(toast_label)
 
+	# Interaktions-Hinweis (z. B. „[E] Verstecken")
+	prompt_label = Label.new()
+	prompt_label.add_theme_font_size_override("font_size", 18)
+	prompt_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.8))
+	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	prompt_label.set_anchors_preset(Control.PRESET_CENTER)
+	prompt_label.position = Vector2(-150, 40)
+	prompt_label.custom_minimum_size = Vector2(300, 0)
+	prompt_label.modulate.a = 0.0
+	hud.add_child(prompt_label)
+
 	# Tunnelblick-Vignette (verdunkelt bei niedrigem Verstand)
 	vignette = ColorRect.new()
 	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -193,7 +206,7 @@ func _build_ui() -> void:
 
 	# --- Startmenü ---
 	menu_panel = _make_overlay("THE BACKROOMS",
-		"Level 0\n\n[ Enter ] oder Klick — Eintreten\n\nWASD bewegen  ·  Maus sehen  ·  Shift rennen  ·  Esc Pause")
+		"Level 0\n\n[ Enter ] oder Klick — Eintreten\n\nFinde den grün leuchtenden AUSGANG, um zu entkommen.\n\nWASD bewegen · Maus sehen · Shift rennen · Strg schleichen · E verstecken · Esc Pause")
 	ui_layer.add_child(menu_panel)
 
 	# --- Pause ---
@@ -206,6 +219,12 @@ func _build_ui() -> void:
 		"Du bist in den Backrooms verloren.\n\n[ Enter ] — Erneut versuchen")
 	death_panel.visible = false
 	ui_layer.add_child(death_panel)
+
+	# --- Sieg / Entkommen ---
+	win_panel = _make_overlay("ENTKOMMEN",
+		"Du hast einen Ausgang gefunden und Level 0 verlassen.\n\n[ Enter ] — Erneut (neue Räume)")
+	win_panel.visible = false
+	ui_layer.add_child(win_panel)
 
 
 func _make_label(text: String, offset: Vector2, preset: int) -> Label:
@@ -283,6 +302,7 @@ func _show_menu() -> void:
 	hud.visible = false
 	pause_panel.visible = false
 	death_panel.visible = false
+	win_panel.visible = false
 
 
 func start_game() -> void:
@@ -334,6 +354,9 @@ func start_game() -> void:
 	menu_panel.visible = false
 	pause_panel.visible = false
 	death_panel.visible = false
+	win_panel.visible = false
+	if prompt_label:
+		prompt_label.modulate.a = 0.0
 	hud.visible = true
 
 
@@ -351,6 +374,24 @@ func _show_toast(text: String) -> void:
 	toast_label.text = text
 	toast_label.modulate.a = 1.0
 	_toast_timer = 2.5
+
+
+func on_exit_reached() -> void:
+	if state != State.PLAYING:
+		return
+	_win()
+
+
+func _win() -> void:
+	state = State.WON
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	hud.visible = false
+	win_panel.visible = true
+	if hum_player and hum_player.playing:
+		hum_player.stop()
+	if pickup_player and pickup_player.stream:
+		pickup_player.play()
+	NoiseSystem.reset()
 
 
 func _on_player_caught() -> void:
@@ -405,7 +446,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not confirm:
 		return
 
-	if state == State.MENU or state == State.DEAD:
+	if state == State.MENU or state == State.DEAD or state == State.WON:
 		start_game()
 
 
@@ -441,6 +482,17 @@ func _process(delta: float) -> void:
 		noise_bar.color = Color(1.0, 0.2, 0.15)
 	else:
 		noise_bar.color = Color(0.95, 0.6, 0.2)
+
+	# Interaktions-Hinweis (Verstecken)
+	if prompt_label:
+		if player.get("hidden"):
+			prompt_label.text = "[ E ] — Versteck verlassen"
+			prompt_label.modulate.a = 1.0
+		elif player.get("can_hide"):
+			prompt_label.text = "[ E ] — Verstecken"
+			prompt_label.modulate.a = 1.0
+		else:
+			prompt_label.modulate.a = 0.0
 
 	# Toast-Hinweis ausblenden
 	if _toast_timer > 0.0:
