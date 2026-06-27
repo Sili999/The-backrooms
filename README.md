@@ -19,7 +19,8 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 - First-Person-Controller mit Maus-Look, Sprint und **Ausdauer**
 - **Prozedural endlose** Räume (Chunk-basiert, deterministisch geseedet)
 - Atmosphäre: gelblicher Nebel, **flackernde Leuchtstoffröhren**, Glow/Bloom
-- **Verstand-System** (Sanity) mit Tunnelblick-Vignette
+- **Verstand-System** (Sanity) mit Tunnelblick-Vignette; **Almond Water**-Pickups stellen den
+  Verstand wieder her (über die Räume verstreut, einfach hineinlaufen)
 - **Geräusch-/Stealth-System**: umstoßbare Physik-Objekte und lautes Rennen erhöhen einen
   Geräuschpegel; übersteigt er die Schwelle, wird die Bedrohung **alarmiert** und durchsucht den
   Umkreis der Geräuschquelle. Schleichen hält dich leise.

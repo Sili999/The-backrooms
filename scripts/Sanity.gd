@@ -5,7 +5,7 @@ extends Node
 
 @export var value: float = 100.0
 @export var max_value: float = 100.0
-@export var base_drain: float = 0.6        # pro Sekunde, Grundzermürbung
+@export var base_drain: float = 0.25       # pro Sekunde, Grundzermürbung
 @export var proximity_drain: float = 9.0   # zusätzlich, wenn Entität nah
 @export var proximity_range: float = 10.0  # ab dieser Distanz beginnt Panik
 @export var regen: float = 0.0             # optionale langsame Erholung

@@ -22,6 +22,7 @@ audio/
   entity_ambient.ogg     # ferne Bedrohungsgeräusche (Entity, 3D-Sound)
   stinger.ogg            # Tod-/Schreck-Stinger (optional)
   prop_impact.ogg        # Aufprall/Klappern umgestoßener Objekte (KnockableProp, 3D)
+  pickup.ogg             # Aufsammel-Chime für Almond Water (AlmondWater)
 fonts/
   ui.ttf                 # UI-Schrift (optional)
 ```

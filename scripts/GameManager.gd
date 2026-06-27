@@ -28,12 +28,16 @@ var noise_bar: ColorRect
 var vignette: ColorRect
 var hum_player: AudioStreamPlayer
 var stinger_player: AudioStreamPlayer
+var pickup_player: AudioStreamPlayer
+var toast_label: Label
+var _toast_timer: float = 0.0
 
 
 func _ready() -> void:
 	# Auch während get_tree().paused weiter Eingaben/Updates erhalten,
 	# damit Esc die Pause wieder aufheben kann.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("game_manager")
 	randomize()
 	_setup_input()
 	_build_environment()
@@ -121,6 +125,13 @@ func _build_ambient_audio() -> void:
 		stinger_player.stream = load(sp) as AudioStream
 	add_child(stinger_player)
 
+	# Aufsammel-Sound (Almond Water)
+	pickup_player = AudioStreamPlayer.new()
+	var pk := "res://assets/audio/pickup.ogg"
+	if ResourceLoader.exists(pk):
+		pickup_player.stream = load(pk) as AudioStream
+	add_child(pickup_player)
+
 
 # ---------------------------------------------------------------------------
 # UI komplett im Code aufgebaut (Menü / HUD / Pause / Tod)
@@ -161,6 +172,17 @@ func _build_ui() -> void:
 	noise_bar = _make_bar(Vector2(24, -124), Color(0.95, 0.6, 0.2), Control.PRESET_BOTTOM_LEFT)
 	hud.add_child(_bar_bg(noise_bar))
 	hud.add_child(noise_bar)
+
+	# Kurzer Hinweis-Text (z. B. beim Aufsammeln von Almond Water)
+	toast_label = Label.new()
+	toast_label.add_theme_font_size_override("font_size", 20)
+	toast_label.add_theme_color_override("font_color", Color(0.7, 0.9, 0.65))
+	toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	toast_label.position = Vector2(-200, -140)
+	toast_label.custom_minimum_size = Vector2(400, 0)
+	toast_label.modulate.a = 0.0
+	hud.add_child(toast_label)
 
 	# Tunnelblick-Vignette (verdunkelt bei niedrigem Verstand)
 	vignette = ColorRect.new()
@@ -315,6 +337,22 @@ func start_game() -> void:
 	hud.visible = true
 
 
+func on_almond_water_collected(amount: float) -> void:
+	if is_instance_valid(sanity):
+		sanity.restore(amount)
+	if pickup_player and pickup_player.stream:
+		pickup_player.play()
+	_show_toast("Almond Water — Verstand +%d" % int(amount))
+
+
+func _show_toast(text: String) -> void:
+	if not toast_label:
+		return
+	toast_label.text = text
+	toast_label.modulate.a = 1.0
+	_toast_timer = 2.5
+
+
 func _on_player_caught() -> void:
 	if state != State.PLAYING:
 		return
@@ -403,3 +441,8 @@ func _process(delta: float) -> void:
 		noise_bar.color = Color(1.0, 0.2, 0.15)
 	else:
 		noise_bar.color = Color(0.95, 0.6, 0.2)
+
+	# Toast-Hinweis ausblenden
+	if _toast_timer > 0.0:
+		_toast_timer -= delta
+		toast_label.modulate.a = clampf(_toast_timer / 0.8, 0.0, 1.0)

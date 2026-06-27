@@ -33,6 +33,7 @@ var _crouching: bool = false
 
 
 func _ready() -> void:
+	add_to_group("player")
 	_head = $Head
 	_camera = $Head/Camera
 	_footsteps = get_node_or_null("Footsteps")

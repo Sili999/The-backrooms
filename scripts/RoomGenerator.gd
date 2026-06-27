@@ -10,6 +10,7 @@ extends Node3D
 @export var view_radius: int = 2        # geladene Chunks um den Spieler (in jede Richtung)
 @export var wall_density: float = 0.42  # Anteil Zellen mit Wandsegment
 @export var prop_density: float = 0.07  # Anteil leerer Zellen mit umstoßbarem Prop
+@export var almond_density: float = 0.03 # Anteil leerer Zellen mit Almond Water
 @export var world_seed: int = 1337
 
 var player: CharacterBody3D
@@ -22,6 +23,7 @@ var _mat_light: StandardMaterial3D
 
 const FLICKER := preload("res://scripts/FlickerLight.gd")
 const PROP := preload("res://scripts/KnockableProp.gd")
+const ALMOND := preload("res://scripts/AlmondWater.gd")
 
 
 func _ready() -> void:
@@ -121,6 +123,9 @@ func _generate_chunk(coord: Vector2i) -> Node3D:
 			elif rng.randf() < prop_density:
 				# leere Zelle: gelegentlich ein umstoßbares Objekt
 				_add_prop(chunk, cell_center, rng)
+			elif rng.randf() < almond_density:
+				# leere Zelle: selten Almond Water
+				_add_almond_water(chunk, cell_center)
 
 			# Deckenlampe in regelmäßigem Raster
 			var gx := coord.x * chunk_cells + ix
@@ -176,6 +181,12 @@ func _add_ceiling_light(parent: Node3D, cell_center: Vector3) -> void:
 	light.light_energy = 1.8
 	light.shadow_enabled = false
 	parent.add_child(light)
+
+
+func _add_almond_water(parent: Node3D, cell_center: Vector3) -> void:
+	var item = ALMOND.new()
+	item.position = cell_center
+	parent.add_child(item)
 
 
 func _add_prop(parent: Node3D, cell_center: Vector3, rng: RandomNumberGenerator) -> void:
