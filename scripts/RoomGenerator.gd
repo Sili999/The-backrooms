@@ -9,6 +9,7 @@ extends Node3D
 @export var wall_height: float = 3.0
 @export var view_radius: int = 2        # geladene Chunks um den Spieler (in jede Richtung)
 @export var wall_density: float = 0.42  # Anteil Zellen mit Wandsegment
+@export var prop_density: float = 0.07  # Anteil leerer Zellen mit umstoßbarem Prop
 @export var world_seed: int = 1337
 
 var player: CharacterBody3D
@@ -20,6 +21,7 @@ var _mat_ceiling: StandardMaterial3D
 var _mat_light: StandardMaterial3D
 
 const FLICKER := preload("res://scripts/FlickerLight.gd")
+const PROP := preload("res://scripts/KnockableProp.gd")
 
 
 func _ready() -> void:
@@ -116,6 +118,10 @@ func _generate_chunk(coord: Vector2i) -> Node3D:
 					Vector3(0.5, wall_height, 0.5),
 					cell_center + Vector3(0, wall_height * 0.5, 0), _mat_wall, true))
 
+			elif rng.randf() < prop_density:
+				# leere Zelle: gelegentlich ein umstoßbares Objekt
+				_add_prop(chunk, cell_center, rng)
+
 			# Deckenlampe in regelmäßigem Raster
 			var gx := coord.x * chunk_cells + ix
 			var gz := coord.y * chunk_cells + iz
@@ -170,6 +176,14 @@ func _add_ceiling_light(parent: Node3D, cell_center: Vector3) -> void:
 	light.light_energy = 1.8
 	light.shadow_enabled = false
 	parent.add_child(light)
+
+
+func _add_prop(parent: Node3D, cell_center: Vector3, rng: RandomNumberGenerator) -> void:
+	var prop = PROP.new()
+	prop.kind = 1 if rng.randf() < 0.4 else 0
+	prop.position = cell_center + Vector3(
+		rng.randf_range(-1.0, 1.0), 0.4, rng.randf_range(-1.0, 1.0))
+	parent.add_child(prop)
 
 
 func _cell_seed(gx: int, gz: int) -> int:

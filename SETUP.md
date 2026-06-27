@@ -44,8 +44,13 @@ Geschätzte Zeit: **~10 Minuten**.
 | **Starten / Neustart** | `Enter` oder Mausklick |
 | Bewegen | `W` `A` `S` `D` |
 | Umsehen | Maus bewegen |
-| Rennen | `Shift` gedrückt halten (verbraucht Ausdauer) |
+| Rennen (laut!) | `Shift` gedrückt halten (verbraucht Ausdauer) |
+| Schleichen (leise) | `Strg` oder `C` |
 | Pause | `Esc` |
+
+> 🔊 **Lärm zieht die Bedrohung an.** Rennen und umgestoßene Objekte erhöhen die orange
+> **GERÄUSCH**-Leiste. Erreicht sie die Schwelle, wird die Gestalt alarmiert und kommt zur
+> Geräuschquelle. Schleiche, um leise zu bleiben.
 
 **Ziel:** Überlebe so lange wie möglich. Halte Abstand zu der dunklen Gestalt,
 die durch die Räume wandert — wenn sie dich erreicht, ist das Spiel vorbei.

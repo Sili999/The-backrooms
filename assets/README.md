@@ -21,6 +21,7 @@ audio/
   footstep_01.ogg        # Schritt auf Teppich (Player)
   entity_ambient.ogg     # ferne Bedrohungsgeräusche (Entity, 3D-Sound)
   stinger.ogg            # Tod-/Schreck-Stinger (optional)
+  prop_impact.ogg        # Aufprall/Klappern umgestoßener Objekte (KnockableProp, 3D)
 fonts/
   ui.ttf                 # UI-Schrift (optional)
 ```

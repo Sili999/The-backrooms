@@ -24,6 +24,7 @@ später ersetzen:
 | `assets/audio/footstep_01.ogg` | Audio | Weicher Schritt auf Teppich |
 | `assets/audio/entity_ambient.ogg` | Audio-Loop | Tiefer, bedrohlicher Drone (3D-Sound der Entität) |
 | `assets/audio/stinger.ogg` | Audio | Tod-/Schreck-Stinger (one-shot) |
+| `assets/audio/prop_impact.ogg` | Audio | Aufprall/Klappern eines umgestoßenen Objekts (3D) |
 
 > ⚠️ **Hinweis zur Internet-Recherche:** Ich sollte deine drei itch.io-Links eigenständig
 > abrufen/herunterladen. Die **Netzwerk-Richtlinie dieser Cloud-Umgebung blockiert `itch.io`
@@ -95,7 +96,8 @@ assets/
 │   ├── hum_loop.ogg           ✅ Platzhalter vorhanden  · Lampen-Brummen (Loop)
 │   ├── footstep_01.ogg        ✅ Platzhalter vorhanden  · Schritt (Teppich)
 │   ├── entity_ambient.ogg     ✅ Platzhalter vorhanden  · Entitäts-Drone (Loop, 3D)
-│   └── stinger.ogg            ✅ Platzhalter vorhanden  · Tod-Stinger (one-shot)
+│   ├── stinger.ogg            ✅ Platzhalter vorhanden  · Tod-Stinger (one-shot)
+│   └── prop_impact.ogg        ✅ Platzhalter vorhanden  · Objekt-Aufprall (3D)
 ├── models/
 │   └── ceiling_light.glb      ⬜ optional · Lampen-Panel (aktuell prozedural erzeugt)
 └── fonts/

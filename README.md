@@ -20,7 +20,10 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 - **Prozedural endlose** Räume (Chunk-basiert, deterministisch geseedet)
 - Atmosphäre: gelblicher Nebel, **flackernde Leuchtstoffröhren**, Glow/Bloom
 - **Verstand-System** (Sanity) mit Tunnelblick-Vignette
-- Eine **wandernde Bedrohung**, die bei Entdeckung verfolgt — Kontakt = Game Over
+- **Geräusch-/Stealth-System**: umstoßbare Physik-Objekte und lautes Rennen erhöhen einen
+  Geräuschpegel; übersteigt er die Schwelle, wird die Bedrohung **alarmiert** und durchsucht den
+  Umkreis der Geräuschquelle. Schleichen hält dich leise.
+- Eine **wandernde Bedrohung** mit Zuständen *Wandern → Untersuchen → Verfolgen* — Kontakt = Game Over
 - Start-/Pause-/Tod-Menü
 
 ## Steuerung
@@ -29,10 +32,14 @@ was dort mit dir wandert. Kein Kampf. Nur Flucht.
 |---|---|
 | Bewegen | `W` `A` `S` `D` / Pfeiltasten |
 | Umsehen | Maus |
-| Rennen | `Shift` (verbraucht Ausdauer) |
+| Rennen (laut!) | `Shift` (verbraucht Ausdauer) |
+| Schleichen (leise) | `Strg` oder `C` |
 | Interagieren | `E` |
 | Pause | `Esc` |
 | Starten / Neustart | `Enter` oder Mausklick |
+
+> ⚠️ **Lärm zieht die Bedrohung an.** Rennen ist schnell, aber laut; Schleichen ist langsam, aber
+> fast lautlos. Pass auf, was du umstößt — die orange **GERÄUSCH**-Leiste warnt dich.
 
 ## Starten (Entwicklung)
 

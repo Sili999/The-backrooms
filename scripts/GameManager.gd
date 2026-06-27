@@ -24,6 +24,7 @@ var death_panel: Control
 var pause_panel: Control
 var stamina_bar: ColorRect
 var sanity_bar: ColorRect
+var noise_bar: ColorRect
 var vignette: ColorRect
 var hum_player: AudioStreamPlayer
 var stinger_player: AudioStreamPlayer
@@ -50,7 +51,8 @@ func _setup_input() -> void:
 	_add_action("move_left", [KEY_A, KEY_LEFT])
 	_add_action("move_right", [KEY_D, KEY_RIGHT])
 	_add_action("interact", [KEY_E])
-	_add_key_action("sprint", KEY_SHIFT)
+	_add_action("sprint", [KEY_SHIFT])
+	_add_action("crouch", [KEY_CTRL, KEY_C])
 	_add_key_action("pause", KEY_ESCAPE)
 
 
@@ -154,6 +156,12 @@ func _build_ui() -> void:
 	hud.add_child(_bar_bg(sanity_bar))
 	hud.add_child(sanity_bar)
 
+	# Geräusch-Leiste
+	hud.add_child(_make_label("GERÄUSCH", Vector2(24, -144), Control.PRESET_BOTTOM_LEFT))
+	noise_bar = _make_bar(Vector2(24, -124), Color(0.95, 0.6, 0.2), Control.PRESET_BOTTOM_LEFT)
+	hud.add_child(_bar_bg(noise_bar))
+	hud.add_child(noise_bar)
+
 	# Tunnelblick-Vignette (verdunkelt bei niedrigem Verstand)
 	vignette = ColorRect.new()
 	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -256,6 +264,9 @@ func _show_menu() -> void:
 
 
 func start_game() -> void:
+	# Geräuschpegel zurücksetzen
+	NoiseSystem.reset()
+
 	# Falls Neustart: alte Welt entfernen
 	if is_instance_valid(player):
 		player.queue_free()
@@ -380,3 +391,11 @@ func _process(delta: float) -> void:
 	var stam_max: float = player.get("stamina_max")
 	if stam_max > 0.0:
 		stamina_bar.size.x = 220.0 * clampf(stam / stam_max, 0.0, 1.0)
+
+	# Geräusch-Anzeige (rot eingefärbt, sobald die Alarmschwelle überschritten ist)
+	var nlevel: float = NoiseSystem.level
+	noise_bar.size.x = 220.0 * clampf(nlevel / NoiseSystem.max_level, 0.0, 1.0)
+	if nlevel >= NoiseSystem.alarm_threshold:
+		noise_bar.color = Color(1.0, 0.2, 0.15)
+	else:
+		noise_bar.color = Color(0.95, 0.6, 0.2)

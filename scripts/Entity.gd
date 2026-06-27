@@ -1,19 +1,29 @@
 extends CharacterBody3D
-## Die Bedrohung von Level 0: wandert zufällig umher und verfolgt den Spieler,
-## sobald er in Reichweite ist. Kontakt → Game Over. Kein Kampf möglich —
-## nur Distanz halten, weglaufen, verstecken.
+## Die Bedrohung von Level 0. Mini-Zustandsautomat:
+##   WANDER      – zufälliges Umherwandern
+##   INVESTIGATE – auf Lärm reagieren: zur Geräuschquelle gehen und den Umkreis absuchen
+##   CHASE       – Spieler in Sichtweite verfolgen (Kontakt → Game Over)
+## Kein Kampf möglich — nur Distanz halten, weglaufen, verstecken, LEISE sein.
 
 signal caught_player
 
+enum EState { WANDER, INVESTIGATE, CHASE }
+
 @export var wander_speed: float = 2.2
+@export var investigate_speed: float = 3.4
 @export var chase_speed: float = 5.2
 @export var detection_range: float = 16.0
 @export var catch_range: float = 1.4
+@export var hearing_radius: float = 22.0      # max. Distanz, in der Lärm die Entität erreicht
+@export var investigate_duration: float = 8.0 # Sekunden Suche, bevor zurück zu WANDER
 
 var player: CharacterBody3D
+var _state: int = EState.WANDER
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
 var _wander_dir: Vector3 = Vector3.FORWARD
 var _wander_timer: float = 0.0
+var _investigate_pos: Vector3 = Vector3.ZERO
+var _investigate_timer: float = 0.0
 var _sound: AudioStreamPlayer3D
 
 
@@ -29,6 +39,8 @@ func _ready() -> void:
 			if stream is AudioStreamOggVorbis:
 				(stream as AudioStreamOggVorbis).loop = true
 			_sound.play()
+	# Auf Lärm-Alarme des Geräusch-Systems hören
+	NoiseSystem.alarm_triggered.connect(_on_alarm)
 	_pick_new_wander_dir()
 
 
@@ -47,6 +59,16 @@ func _build_body() -> void:
 	add_child(mesh)
 
 
+func _on_alarm(pos: Vector3, _loudness: float) -> void:
+	# Beim Verfolgen ignorieren; sonst nur, wenn der Lärm nah genug ist.
+	if _state == EState.CHASE:
+		return
+	if global_position.distance_to(pos) <= hearing_radius:
+		_state = EState.INVESTIGATE
+		_investigate_pos = pos
+		_investigate_timer = investigate_duration
+
+
 func _physics_process(delta: float) -> void:
 	if not is_instance_valid(player):
 		return
@@ -60,38 +82,72 @@ func _physics_process(delta: float) -> void:
 	to_player.y = 0.0
 	var dist := to_player.length()
 
-	var horizontal: Vector3
+	# --- Zustandsübergänge ---
 	if dist < detection_range:
-		# Verfolgen
-		horizontal = to_player.normalized() * chase_speed
-		# der Spieler hört die Bedrohung näherkommen
-		if _sound and dist < detection_range:
-			_sound.unit_size = 6.0
-	else:
-		# Wandern
-		_wander_timer -= delta
-		if _wander_timer <= 0.0:
-			_pick_new_wander_dir()
-		horizontal = _wander_dir * wander_speed
+		_state = EState.CHASE
+	elif _state == EState.CHASE:
+		# Spieler verloren → letzte Position untersuchen
+		_state = EState.INVESTIGATE
+		_investigate_pos = player.global_position
+		_investigate_timer = investigate_duration
+
+	# --- Bewegung nach Zustand ---
+	var horizontal := Vector3.ZERO
+	match _state:
+		EState.CHASE:
+			horizontal = to_player.normalized() * chase_speed
+			if _sound:
+				_sound.unit_size = 6.0
+		EState.INVESTIGATE:
+			horizontal = _update_investigate(delta)
+			if _sound:
+				_sound.unit_size = 3.0
+		_:
+			_wander_timer -= delta
+			if _wander_timer <= 0.0:
+				_pick_new_wander_dir()
+			horizontal = _wander_dir * wander_speed
+			if _sound:
+				_sound.unit_size = 1.0
 
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 
-	# Zum Spieler/zur Laufrichtung ausrichten
+	# Zur Laufrichtung ausrichten
 	var look := horizontal
 	look.y = 0.0
 	if look.length() > 0.05:
-		var target := global_position + look
-		look_at(Vector3(target.x, global_position.y, target.z), Vector3.UP)
+		var t := global_position + look
+		look_at(Vector3(t.x, global_position.y, t.z), Vector3.UP)
 
 	move_and_slide()
 
-	# Bei Kollision mit Wand neue Wanderrichtung wählen
-	if get_slide_collision_count() > 0 and dist >= detection_range:
+	# Bei Wandkollision (nicht im Chase) neue Richtung wählen
+	if get_slide_collision_count() > 0 and _state == EState.WANDER:
 		_pick_new_wander_dir()
 
 	if dist <= catch_range:
 		emit_signal("caught_player")
+
+
+func _update_investigate(delta: float) -> Vector3:
+	_investigate_timer -= delta
+	if _investigate_timer <= 0.0:
+		_state = EState.WANDER
+		_pick_new_wander_dir()
+		return _wander_dir * wander_speed
+
+	var to_target := _investigate_pos - global_position
+	to_target.y = 0.0
+	if to_target.length() > 2.0:
+		# noch unterwegs zur Geräuschquelle
+		return to_target.normalized() * investigate_speed
+	else:
+		# am Ziel angekommen → Umkreis absuchen (gelegentlich Richtung wechseln)
+		_wander_timer -= delta
+		if _wander_timer <= 0.0:
+			_pick_new_wander_dir()
+		return _wander_dir * wander_speed
 
 
 func _pick_new_wander_dir() -> void:
