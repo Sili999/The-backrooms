@@ -1,0 +1,30 @@
+; Engine configuration file.
+; Godot 4.x project — The Backrooms: Level 0
+; Eingabe-Aktionen werden zur Laufzeit in GameManager.gd registriert,
+; damit diese Datei schlank und robust bleibt.
+
+config_version=5
+
+[application]
+
+config/name="The Backrooms - Level 0"
+config/description="Ein kurzes 3D-Horror-Spiel im Stil der Backrooms."
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="viewport"
+
+[physics]
+
+3d/default_gravity=14.0
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.02, 0.02, 0.0, 1)
+anti_aliasing/quality/msaa_3d=1
