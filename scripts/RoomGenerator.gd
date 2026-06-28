@@ -36,9 +36,13 @@ func _ready() -> void:
 
 
 func _build_materials() -> void:
-	_mat_wall = _make_material(Color(0.80, 0.74, 0.34), "res://assets/textures/wallpaper_yellow.png", 2.0)
-	_mat_floor = _make_material(Color(0.52, 0.47, 0.29), "res://assets/textures/carpet.png", 4.0)
-	_mat_ceiling = _make_material(Color(0.70, 0.67, 0.52), "res://assets/textures/ceiling.png", 4.0)
+	# CC0-PBR-Texturen (loafbrr „BackroomsLikeAsset2") mit Normal- + ORM-Maps
+	_mat_wall = _pbr_material("res://assets/textures/backrooms/BRW_A/BRW_A",
+		Color(0.82, 0.80, 0.50), 2.0, false)
+	_mat_floor = _pbr_material("res://assets/textures/backrooms/BRF_A/BRF_A",
+		Color(0.62, 0.62, 0.45), 4.0, false)
+	_mat_ceiling = _pbr_material("res://assets/textures/backrooms/BRC_A/BRC_A",
+		Color(0.80, 0.80, 0.80), 4.0, true)
 
 	_mat_light = StandardMaterial3D.new()
 	_mat_light.albedo_color = Color(1.0, 0.98, 0.85)
@@ -47,14 +51,42 @@ func _build_materials() -> void:
 	_mat_light.emission_energy_multiplier = 3.0
 
 
-func _make_material(color: Color, tex_path: String, uv_scale: float) -> StandardMaterial3D:
+func _pbr_material(base: String, fallback: Color, uv_scale: float, emissive: bool) -> StandardMaterial3D:
+	# base = Pfad-Präfix ohne Suffix, z. B. ".../BRW_A/BRW_A"
 	var m := StandardMaterial3D.new()
-	m.albedo_color = color
-	m.roughness = 0.95
+	m.albedo_color = Color(1, 1, 1)
+	m.roughness = 1.0
 	m.metallic = 0.0
-	if ResourceLoader.exists(tex_path):
-		m.albedo_texture = load(tex_path) as Texture2D
-		m.uv1_scale = Vector3(uv_scale, uv_scale, uv_scale)
+	m.uv1_scale = Vector3(uv_scale, uv_scale, uv_scale)
+
+	var diffuse := base + "_Diffuse_1K.png"
+	if ResourceLoader.exists(diffuse):
+		m.albedo_texture = load(diffuse) as Texture2D
+	else:
+		m.albedo_color = fallback   # Fallback, falls Texturen fehlen
+
+	var normal := base + "_Normal_1K.png"
+	if ResourceLoader.exists(normal):
+		m.normal_enabled = true
+		m.normal_texture = load(normal) as Texture2D
+
+	# ORM-Map: R=AO, G=Roughness, B=Metallic
+	var orm := base + "_ORM_1K.png"
+	if ResourceLoader.exists(orm):
+		var t := load(orm) as Texture2D
+		m.ao_enabled = true
+		m.ao_texture = t
+		m.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		m.roughness_texture = t
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+
+	if emissive:
+		var em := base + "_Emission_1K.png"
+		if ResourceLoader.exists(em):
+			m.emission_enabled = true
+			m.emission_texture = load(em) as Texture2D
+			m.emission_energy_multiplier = 1.6
+
 	return m
 
 

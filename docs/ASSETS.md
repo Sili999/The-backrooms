@@ -1,7 +1,12 @@
 # 🎨 Asset-Einkaufsliste
 
-Diese Liste sagt dir **genau**, welche Asset-Dateien das Spiel erwartet, **welche Platzhalter
-schon vorhanden sind** und **wo du hochwertigen Ersatz** bekommst.
+> **Update:** Die wichtigsten Assets sind inzwischen durch **echte CC0-/lizenzfreie Dateien** ersetzt:
+> PBR-Wand/-Boden/-Decken-Texturen (Normal + ORM + Emission) von **loafbrr** und die Entitäts-Sounds
+> (Ambient, Alarm-Knurren, Tod-Schrei) von **juanjo_sound**. Aktuelle Lizenz-/Quellenübersicht:
+> [`../assets/README.md`](../assets/README.md). Die Liste unten dient für weitere optionale Upgrades.
+
+Diese Liste sagt dir **genau**, welche Asset-Dateien das Spiel erwartet und **wo du hochwertigen
+Ersatz** für die noch synthetischen Sounds (hum_loop, footstep, prop_impact, pickup) bekommst.
 
 > **So funktioniert der Austausch:** Lade ein passendes Asset herunter, benenne es exakt wie in
 > Spalte „Zieldatei" und lege es in den angegebenen Ordner. **Kein Code-Änderung nötig** — die

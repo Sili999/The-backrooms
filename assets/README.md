@@ -1,43 +1,41 @@
 # Assets
 
-In `textures/` und `audio/` liegen bereits **generierte Platzhalter** — das Spiel sieht und
-klingt sofort nach Backrooms. Zum Aufwerten ersetzt du sie durch hochwertige (CC0-)Assets mit
-**gleichem Dateinamen** — kein Code-Eingriff nötig. Fehlt eine Datei, fällt das Spiel auf
-prozedurale Platzhalter im Code zurück.
+Echte, eingebundene Assets (keine Platzhalter mehr für Texturen & Entity-Sounds).
+Die Skripte laden sie defensiv über feste Pfade; fehlt eine Datei, gibt es einen Code-Fallback.
 
-➡️ **Fertige Einkaufsliste mit Links & Zuordnung: [`../docs/ASSETS.md`](../docs/ASSETS.md)**
-
-## Erwartete Dateien
+## Struktur
 
 ```
-textures/
-  wallpaper_yellow.png   # kachelbare gelbe Tapete  (RoomGenerator -> Wände)
-  carpet.png             # kachelbarer feuchter Teppich (Boden)
-  ceiling.png            # Akustik-/Deckenplatten (Decke)
-models/
-  ceiling_light.glb      # optionales Lampen-Panel (derzeit prozedural)
+textures/backrooms/        # CC0-PBR-Texturen (loafbrr) — Diffuse + Normal + ORM (+ Emission)
+  BRW_A/  BRW_A_Diffuse_1K.png · _Normal_1K.png · _ORM_1K.png      -> Wände
+  BRF_A/  BRF_A_Diffuse_1K.png · _Normal_1K.png · _ORM_1K.png      -> Boden
+  BRC_A/  BRC_A_Diffuse_1K.png · _Normal_1K.png · _ORM_1K.png
+          BRC_A_Emission_1K.png                                    -> Decke (leuchtende Paneele)
 audio/
-  hum_loop.ogg           # nahtloses Leuchtstoff-Brummen (GameManager)
-  footstep_01.ogg        # Schritt auf Teppich (Player)
-  entity_ambient.ogg     # ferne Bedrohungsgeräusche (Entity, 3D-Sound)
-  stinger.ogg            # Tod-/Schreck-Stinger (optional)
-  prop_impact.ogg        # Aufprall/Klappern umgestoßener Objekte (KnockableProp, 3D)
-  pickup.ogg             # Aufsammel-Chime für Almond Water (AlmondWater)
-fonts/
-  ui.ttf                 # UI-Schrift (optional)
+  hum_loop.ogg           # Leuchtstoff-Brummen (synthetisiert, GameManager) — ersetzbar
+  footstep_01.ogg        # Schritt auf Teppich (synthetisiert, Player)
+  entity_ambient.ogg     # Entitäts-Drone, Loop (juanjo_sound, 3D)
+  entity_alert.ogg       # Knurren beim Aufnehmen der Verfolgung (juanjo_sound, 3D)
+  stinger.ogg            # Tod-Schrei (juanjo_sound)
+  prop_impact.ogg        # Aufprall umgestoßener Objekte (synthetisiert, 3D)
+  pickup.ogg             # Almond-Water-Aufsammeln (synthetisiert)
+models/ , fonts/         # derzeit leer (Geometrie ist prozedural)
 ```
 
-## Empfohlene CC0-/lizenzfreie Quellen
+## Lizenzen der verwendeten Assets
 
-- **Texturen:** ambientCG (ambientcg.com), Poly Haven (polyhaven.com), Kenney (kenney.nl)
-- **3D-Modelle:** Kenney, Poly Haven, selbst in Blender erstellt
-- **Audio:** Freesound (freesound.org — auf CC0 filtern!), Kenney Audio
-- **Fonts:** Google Fonts (fonts.google.com — Lizenz beachten)
+| Asset | Quelle | Lizenz | Autor | Hinweis |
+|-------|--------|--------|-------|---------|
+| `textures/backrooms/*` | loafbrr „BackroomsLikeAsset2" (itch.io) | **CC0** | loafbrr | frei, Namensnennung erbeten |
+| `audio/entity_ambient·alert·stinger.ogg` | juanjo_sound „Backrooms Entity SFX Vol. 1" (itch.io) | frei für Projekte | juanjo_sound | **nicht** als Standalone-Pack weiterverteilen; Namensnennung erbeten |
+| `audio/hum_loop·footstep_01·prop_impact·pickup.ogg` | selbst generiert (Synthese) | eigen | — | ersetzbar |
 
-## Lizenz-Dokumentation
+> **Namensnennung (empfohlen):** „Environment textures by loafbrr (CC0)", „Entity sounds by juanjo_sound".
+> Es sind nur die tatsächlich genutzten Dateien eingebunden; die übrigen Pack-Inhalte wurden entfernt.
 
-Trage hier jede verwendete Datei mit Quelle + Lizenz ein, bevor das Projekt veröffentlicht wird:
+## Noch ersetzbar (optionale Verbesserung)
 
-| Datei | Quelle (URL) | Lizenz | Autor |
-|-------|--------------|--------|-------|
-| _z. B. carpet.png_ | _ambientcg.com/..._ | CC0 | _ambientCG_ |
+- `hum_loop.ogg` — synthetisch mit hörbarer Loop-Naht; ein CC0-Leuchtstoff-Brummen von
+  *Freesound* (auf CC0 filtern) wäre besser.
+- `footstep_01.ogg` — nur eine Variante; ein Schritt-Pack (3–5 Varianten Teppich) verbessert es.
+- UI-Schrift (`fonts/`) — optional eine kondensierte Horror-Schrift (Google Fonts).

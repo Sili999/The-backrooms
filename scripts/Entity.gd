@@ -37,6 +37,7 @@ var _investigate_timer: float = 0.0
 var _last_seen_pos: Vector3 = Vector3.ZERO
 var _lose_timer: float = 0.0
 var _sound: AudioStreamPlayer3D
+var _alert: AudioStreamPlayer3D
 
 
 func _ready() -> void:
@@ -51,6 +52,15 @@ func _ready() -> void:
 			if stream is AudioStreamOggVorbis:
 				(stream as AudioStreamOggVorbis).loop = true
 			_sound.play()
+	# Alarm-Knurren (einmalig beim Aufnehmen der Verfolgung)
+	_alert = AudioStreamPlayer3D.new()
+	_alert.max_distance = 30.0
+	_alert.unit_size = 8.0
+	add_child(_alert)
+	var ap := "res://assets/audio/entity_alert.ogg"
+	if ResourceLoader.exists(ap):
+		_alert.stream = load(ap) as AudioStream
+
 	# Auf Lärm-Alarme des Geräusch-Systems hören
 	NoiseSystem.alarm_triggered.connect(_on_alarm)
 	_pick_new_wander_dir()
@@ -97,6 +107,9 @@ func _physics_process(delta: float) -> void:
 	# --- Erkennung (Sichtlinie + Sichtkegel) mit Hysterese ---
 	var seen := _can_see_player()
 	if seen:
+		# Beim erstmaligen Erfassen (nicht schon im CHASE) knurren
+		if _state != EState.CHASE and _alert and _alert.stream and not _alert.playing:
+			_alert.play()
 		_state = EState.CHASE
 		_last_seen_pos = player.global_position
 		_lose_timer = lose_memory
