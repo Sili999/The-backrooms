@@ -32,6 +32,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 
 var _bob_time: float = 0.0
 var _step_accum: float = 0.0
 var _crouching: bool = false
+var _noise: Node   # Laufzeit-Referenz aufs Geräusch-Singleton
 
 # Versteck-Zustand (von GameManager/Entity gelesen)
 var hidden: bool = false
@@ -42,6 +43,7 @@ var _unhide_pos: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	add_to_group("player")
+	_noise = get_tree().get_first_node_in_group("noise_system")
 	_head = $Head
 	_camera = $Head/Camera
 	_footsteps = get_node_or_null("Footsteps")
@@ -166,12 +168,14 @@ func _push_rigid_props() -> void:
 func _emit_movement_noise(delta: float, moving: bool, sprinting: bool) -> void:
 	if not (moving and is_on_floor()):
 		return
+	if _noise == null:
+		return
 	var rate := noise_walk
 	if sprinting:
 		rate = noise_sprint
 	elif _crouching:
 		rate = noise_crouch
-	NoiseSystem.emit_noise(global_position, rate * delta)
+	_noise.emit_noise(global_position, rate * delta)
 
 
 func _apply_headbob(delta: float, moving: bool, speed: float) -> void:

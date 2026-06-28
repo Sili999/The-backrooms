@@ -10,10 +10,12 @@ extends RigidBody3D
 
 var _cooldown: float = 0.0
 var _impact: AudioStreamPlayer3D
+var _noise: Node   # Laufzeit-Referenz aufs Geräusch-Singleton
 
 
 func _ready() -> void:
 	add_to_group("prop")
+	_noise = get_tree().get_first_node_in_group("noise_system")
 	can_sleep = true
 	mass = 2.0
 	collision_layer = 1
@@ -67,7 +69,8 @@ func _physics_process(delta: float) -> void:
 	if spd > motion_threshold and _cooldown <= 0.0:
 		_cooldown = report_cooldown
 		var loud := noise_amount * clampf(spd / 4.0, 0.4, 1.5)
-		NoiseSystem.emit_noise(global_position, loud)
+		if _noise:
+			_noise.emit_noise(global_position, loud)
 		if _impact and _impact.stream:
 			_impact.pitch_scale = randf_range(0.9, 1.15)
 			_impact.play()

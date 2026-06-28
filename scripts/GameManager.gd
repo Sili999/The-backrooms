@@ -34,18 +34,34 @@ var pickup_player: AudioStreamPlayer
 var toast_label: Label
 var _toast_timer: float = 0.0
 
+# Laufzeit-Referenz auf das Geräusch-Singleton (statt Abhängigkeit vom Autoload-Namen)
+var _noise: Node
+
 
 func _ready() -> void:
 	# Auch während get_tree().paused weiter Eingaben/Updates erhalten,
 	# damit Esc die Pause wieder aufheben kann.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("game_manager")
+	_noise = _ensure_noise_system()
 	randomize()
 	_setup_input()
 	_build_environment()
 	_build_ui()
 	_build_ambient_audio()
 	_show_menu()
+
+
+func _ensure_noise_system() -> Node:
+	# Robust gegen fehlenden [autoload]-Eintrag: existiert das Singleton nicht,
+	# wird es hier als eigenes Kind erzeugt. Dadurch hängt das Spiel nicht am
+	# Autoload-Namen — gefunden wird es über die Gruppe "noise_system".
+	var ns := get_tree().get_first_node_in_group("noise_system")
+	if ns == null:
+		ns = preload("res://scripts/NoiseManager.gd").new()
+		ns.name = "NoiseSystem"
+		add_child(ns)
+	return ns
 
 
 # ---------------------------------------------------------------------------
@@ -309,7 +325,7 @@ func start_game() -> void:
 	# Defensiv: falls über einen Pause-Pfad gestartet wird, Tree wieder laufen lassen
 	get_tree().paused = false
 	# Geräuschpegel zurücksetzen
-	NoiseSystem.reset()
+	_noise.reset()
 
 	# Falls Neustart: alte Welt entfernen
 	if is_instance_valid(player):
@@ -391,7 +407,7 @@ func _win() -> void:
 		hum_player.stop()
 	if pickup_player and pickup_player.stream:
 		pickup_player.play()
-	NoiseSystem.reset()
+	_noise.reset()
 
 
 func _on_player_caught() -> void:
@@ -410,7 +426,7 @@ func _game_over() -> void:
 	if stinger_player and stinger_player.stream:
 		stinger_player.play()
 	# Definierter Ruhezustand: Geräuschpegel im Tod zurücksetzen
-	NoiseSystem.reset()
+	_noise.reset()
 
 
 func _toggle_pause() -> void:
@@ -476,9 +492,9 @@ func _process(delta: float) -> void:
 		stamina_bar.size.x = 220.0 * clampf(stam / stam_max, 0.0, 1.0)
 
 	# Geräusch-Anzeige (rot eingefärbt, sobald die Alarmschwelle überschritten ist)
-	var nlevel: float = NoiseSystem.level
-	noise_bar.size.x = 220.0 * clampf(nlevel / NoiseSystem.max_level, 0.0, 1.0)
-	if nlevel >= NoiseSystem.alarm_threshold:
+	var nlevel: float = _noise.level
+	noise_bar.size.x = 220.0 * clampf(nlevel / _noise.max_level, 0.0, 1.0)
+	if nlevel >= _noise.alarm_threshold:
 		noise_bar.color = Color(1.0, 0.2, 0.15)
 	else:
 		noise_bar.color = Color(0.95, 0.6, 0.2)

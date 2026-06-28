@@ -38,6 +38,7 @@ var _last_seen_pos: Vector3 = Vector3.ZERO
 var _lose_timer: float = 0.0
 var _sound: AudioStreamPlayer3D
 var _alert: AudioStreamPlayer3D
+var _noise: Node   # Laufzeit-Referenz aufs Geräusch-Singleton
 
 
 func _ready() -> void:
@@ -62,7 +63,9 @@ func _ready() -> void:
 		_alert.stream = load(ap) as AudioStream
 
 	# Auf Lärm-Alarme des Geräusch-Systems hören
-	NoiseSystem.alarm_triggered.connect(_on_alarm)
+	_noise = get_tree().get_first_node_in_group("noise_system")
+	if _noise:
+		_noise.alarm_triggered.connect(_on_alarm)
 	_pick_new_wander_dir()
 
 

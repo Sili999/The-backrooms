@@ -19,6 +19,11 @@ var last_noise_pos: Vector3 = Vector3.ZERO
 var _cooldown: float = 0.0
 
 
+func _ready() -> void:
+	# Auffindbar per Gruppe — unabhängig davon, ob als Autoload oder zur Laufzeit erzeugt
+	add_to_group("noise_system")
+
+
 func emit_noise(pos: Vector3, amount: float) -> void:
 	level = minf(max_level, level + amount)
 	last_noise_pos = pos
